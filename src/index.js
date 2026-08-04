@@ -49,8 +49,12 @@ async function main() {
   const args = parseArgs(process.argv);
   if (!args.dryRun) assertPostConfig();
 
-  const opts = { language: config.language, showAllergens: config.showAllergens };
-  const menu = await fetchMenu(config.locationId, config.language);
+  const dayOpts = {
+    dailyStations: config.dailyStations,
+    treatsStation: config.treatsStation,
+    stationLabels: config.stationLabels,
+  };
+  const menu = await fetchMenu(config.locationId);
   const today = todayInTimezone(config.timezone);
 
   const wantDay = args.mode === "day" || args.mode === "auto";
@@ -67,7 +71,7 @@ async function main() {
     if (!items.length && args.mode === "auto") {
       console.log(`No menu for ${today} — skipping daily post.`);
     } else {
-      await deliver("daily menu", buildDayMessage(today, items, opts), args.dryRun);
+      await deliver("daily menu", buildDayMessage(today, items, dayOpts), args.dryRun);
     }
   }
 
@@ -80,7 +84,11 @@ async function main() {
       throw new Error("Could not determine which week to post.");
     }
     const dates = workweekDates(mondayOfComingWeek);
-    await deliver("week ahead", buildWeekMessage(dates, menu.byDate, opts), args.dryRun);
+    await deliver(
+      "week ahead",
+      buildWeekMessage(dates, menu.byDate, { stationLabels: config.stationLabels }),
+      args.dryRun
+    );
   }
 }
 

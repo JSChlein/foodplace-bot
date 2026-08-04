@@ -17,12 +17,35 @@ export const config = {
   // Timezone used to decide "today" and "which weekday it is".
   timezone: process.env.TIMEZONE || "Europe/Copenhagen",
 
-  // Language for the dish text: "da" (Danish) or "en" (English).
-  language: process.env.MENU_LANGUAGE || "da",
+  // Which stations to include in the DAILY post, in display order. Names must
+  // match the station names from The Food Place exactly (case-insensitive).
+  // Comma-separated. The weekly (Friday) post always shows the full menu.
+  dailyStations: (process.env.DAILY_STATIONS || "Go Green,Meal 1,Comfort Food")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
 
-  // Whether to append allergen info under each dish.
-  showAllergens: process.env.SHOW_ALLERGENS !== "false",
+  // The "treats" station is highlighted separately in the daily post whenever
+  // there's something on it that day.
+  treatsStation: process.env.TREATS_STATION || "Treats",
+
+  // Pretty display names for stations whose raw name is unhelpful. Format:
+  // "Meal 1=The Deli,Meal 2=Salads". Applied to both daily and weekly posts.
+  stationLabels: parseLabels(process.env.STATION_LABELS || "Meal 1=The Deli"),
 };
+
+// Parse "Raw A=Nice A,Raw B=Nice B" into a lowercase-keyed lookup.
+function parseLabels(spec) {
+  const map = {};
+  for (const pair of spec.split(",")) {
+    const idx = pair.indexOf("=");
+    if (idx === -1) continue;
+    const from = pair.slice(0, idx).trim();
+    const to = pair.slice(idx + 1).trim();
+    if (from && to) map[from.toLowerCase()] = to;
+  }
+  return map;
+}
 
 export function assertPostConfig() {
   const missing = [];

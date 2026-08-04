@@ -1,10 +1,12 @@
 # foodplace-bot
 
 Posts the canteen menu from [The Food Place](https://salling.thefoodplace.dk) to a
-Slack channel on a schedule:
+Slack channel on a schedule, **bilingually (Danish + English)**:
 
-- **Every weekday morning** → today's menu.
-- **Every Friday** → additionally, the full menu for the coming week.
+- **Every weekday morning** → today's menu for the selected stations
+  (Go Green, the deli, Comfort Food by default), plus a highlighted "today's
+  treat" whenever the Treats station has something.
+- **Every Friday** → additionally, the full menu for the coming week (all stations).
 
 It's a small Node script triggered by a scheduler (GitHub Actions by default).
 There is **no always-on server and no slash command** — the bot posts proactively,
@@ -84,8 +86,12 @@ also be delayed a few minutes at peak times.
 | `SLACK_CHANNEL_ID` | — (required) | Target channel ID |
 | `FOODPLACE_LOCATION_ID` | `1` | Trailing number in the menu URL |
 | `TIMEZONE` | `Europe/Copenhagen` | Used to decide "today" / detect Fridays |
-| `MENU_LANGUAGE` | `da` | `da` or `en` |
-| `SHOW_ALLERGENS` | `true` | Set `false` to hide allergen lines |
+| `DAILY_STATIONS` | `Go Green,Meal 1,Comfort Food` | Stations in the daily post, in order |
+| `TREATS_STATION` | `Treats` | Station highlighted as "today's treat" |
+| `STATION_LABELS` | `Meal 1=The Deli` | Rename ugly station names for display |
+
+Output is always bilingual (Danish + English). The weekly post always shows all
+stations regardless of `DAILY_STATIONS`.
 
 ## Modes
 

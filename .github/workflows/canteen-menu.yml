@@ -27,4 +27,6 @@ jobs:
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           FOODPLACE_LOCATION_ID: ${{ vars.FOODPLACE_LOCATION_ID || '1' }}
           TIMEZONE: ${{ vars.TIMEZONE || 'Europe/Copenhagen' }}
-          MENU_LANGUAGE: ${{ vars.MENU_LANGUAGE || 'da' }}
+          DAILY_STATIONS: ${{ vars.DAILY_STATIONS || 'Go Green,Meal 1,Comfort Food' }}
+          TREATS_STATION: ${{ vars.TREATS_STATION || 'Treats' }}
+          STATION_LABELS: ${{ vars.STATION_LABELS || 'Meal 1=The Deli' }}

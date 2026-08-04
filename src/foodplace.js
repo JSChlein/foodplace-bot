@@ -53,8 +53,9 @@ function extractRemixContext(html) {
   return JSON.parse(html.slice(from, end));
 }
 
-// Normalize the raw entries into a simple shape grouped by date.
-function normalize(routeData, language) {
+// Normalize the raw entries into a simple shape grouped by date. Both languages
+// are kept on every item so the caller can render bilingual output.
+function normalize(routeData) {
   const entries = routeData?.data?.data;
   if (!Array.isArray(entries)) {
     throw new Error("Menu payload did not contain the expected data array.");
@@ -64,24 +65,16 @@ function normalize(routeData, language) {
   for (const entry of entries) {
     const station = entry.station_name || {};
     const recipe = entry.recipe_id || {};
-    const dish =
-      language === "en"
-        ? recipe.menu_info_1 || recipe.menu_info
-        : recipe.menu_info || recipe.menu_info_1;
-    if (!dish) continue;
-
-    const allergens = (recipe.allergens_list || [])
-      .map((a) => a.Allergens_id)
-      .filter(Boolean)
-      .map((a) => (language === "en" ? a.translated_name || a.name : a.name))
-      .filter(Boolean);
+    const da = (recipe.menu_info || "").trim();
+    const en = (recipe.menu_info_1 || "").trim();
+    if (!da && !en) continue;
 
     const item = {
       date: entry.date,
       station: (station.station_name || "").trim(),
       stationSequence: station.sequence ?? 999,
-      dish: dish.trim(),
-      allergens,
+      da: { dish: da || en },
+      en: { dish: en || da },
     };
 
     if (!byDate.has(item.date)) byDate.set(item.date, []);
@@ -100,7 +93,7 @@ function normalize(routeData, language) {
   };
 }
 
-export async function fetchMenu(locationId, language) {
+export async function fetchMenu(locationId) {
   const url = menuUrl(locationId);
   const res = await fetch(url, {
     headers: {
@@ -120,5 +113,5 @@ export async function fetchMenu(locationId, language) {
       `Route data "${ROUTE_KEY}" not found. The Food Place may have changed its routes.`
     );
   }
-  return normalize(routeData, language);
+  return normalize(routeData);
 }
