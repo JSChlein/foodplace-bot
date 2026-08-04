@@ -1,0 +1,30 @@
+name: Canteen menu
+
+# Runs every weekday morning. The script decides what to post:
+#   - the daily menu on every weekday
+#   - additionally, on Fridays, the full coming-week menu
+#
+# Cron is in UTC. 06:00 UTC = 08:00 in Copenhagen during summer (CEST) and
+# 07:00 during winter (CET). Adjust the hour if you want a different local time;
+# note that a fixed UTC cron drifts by one hour across daylight-saving changes.
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch: # allows manual "Run workflow" from the Actions tab
+
+jobs:
+  post-menu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run post
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          FOODPLACE_LOCATION_ID: ${{ vars.FOODPLACE_LOCATION_ID || '1' }}
+          TIMEZONE: ${{ vars.TIMEZONE || 'Europe/Copenhagen' }}
+          MENU_LANGUAGE: ${{ vars.MENU_LANGUAGE || 'da' }}

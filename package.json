@@ -1,0 +1,19 @@
+{
+  "name": "foodplace-bot",
+  "version": "1.0.0",
+  "description": "Posts the canteen menu from The Food Place to a Slack channel on a schedule.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "post": "node src/index.js",
+    "post:local": "node --env-file=.env src/index.js",
+    "post:day": "node --env-file=.env src/index.js --mode=day",
+    "post:week": "node --env-file=.env src/index.js --mode=week",
+    "preview": "node src/index.js --dry-run"
+  },
+  "dependencies": {
+    "@slack/web-api": "^7.8.0"
+  }
+}
