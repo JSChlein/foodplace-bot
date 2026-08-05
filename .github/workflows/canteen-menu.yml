@@ -1,21 +1,16 @@
 name: Canteen menu
 
-# Runs every weekday morning. The script decides what to post:
+# Triggered externally, not by GitHub's own cron. GitHub's scheduled runs are
+# best-effort and unreliable, so we drive this from Google Cloud Scheduler, which
+# POSTs to the workflow_dispatch API on a real, timezone-aware schedule. The
+# script decides what to post:
 #   - the daily menu on every weekday
 #   - additionally, on Fridays, the full coming-week menu
 #
-# Cron is in UTC. 06:17 UTC = 08:17 in Copenhagen during summer (CEST) and
-# 07:17 during winter (CET). Adjust the hour if you want a different local time;
-# note that a fixed UTC cron drifts by one hour across daylight-saving changes.
-#
-# We deliberately avoid the top of the hour ("0 6"): GitHub's scheduled runs are
-# best-effort and the on-the-hour slots are the most congested — they get delayed
-# by many minutes and are sometimes dropped entirely. An odd minute is far more
-# reliable. Even so, expect the occasional few-minute delay.
+# The weekday/Friday logic and timezone live in the code and in the Cloud
+# Scheduler job (Europe/Copenhagen), so there is nothing time-related here.
 on:
-  schedule:
-    - cron: "17 7 * * 1-5"
-  workflow_dispatch: # allows manual "Run workflow" from the Actions tab
+  workflow_dispatch: # triggered by Cloud Scheduler (and the manual "Run workflow" button)
 
 jobs:
   post-menu:
