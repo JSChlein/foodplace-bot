@@ -5,8 +5,11 @@ Slack channel on a schedule, **bilingually (Danish + English)**:
 
 - **Every weekday morning** → today's menu for the selected stations
   (Go Green, the deli, Comfort Food by default), plus a highlighted "today's
-  treat" whenever the Treats station has something.
+  treat" whenever the Treats station has something, and a random gif at the end
+  (see [Gifs](#gifs)).
 - **Every Friday** → additionally, the full menu for the coming week (all stations).
+- **Every weekday at 10:55** → a separate "⏰ 5 minutes until lunch" nudge with
+  its own random gif (English only, no menu).
 
 It's a small Node script triggered by a scheduler (GitHub Actions by default).
 There is **no always-on server and no slash command** — the bot posts proactively,
@@ -26,8 +29,13 @@ src/
   foodplace.js   fetch + parse the menu
   dates.js       timezone-aware "today"/weekday/week helpers
   format.js      Slack Block Kit message builders
+  gifs.js        loads a gif list and picks one at random
   slack.js       chat.postMessage wrapper
-  index.js       entry point + mode selection
+  deliver.js     print-or-post step shared by both entry points
+  index.js       menu posts — entry point + mode selection
+  reminder.js    "5 minutes until lunch" — entry point
+gifs.txt              gif pool for the daily menu post
+gifs-reminder.txt     gif pool for the lunch reminder
 ```
 
 ## Slack setup (one time)
@@ -54,29 +62,70 @@ cp .env.example .env      # fill in SLACK_BOT_TOKEN and SLACK_CHANNEL_ID
 # Preview messages without posting (no token needed):
 npm run preview -- --mode=day
 npm run preview -- --mode=week
+npm run remind:preview
 
 # Actually post to Slack (reads .env):
 npm run post:day
 npm run post:week
+npm run remind:local
 ```
 
-## Deployment (GitHub Actions — recommended)
+## Deployment (GitHub Actions, driven by Google Cloud Scheduler)
 
-The workflow in `.github/workflows/canteen-menu.yml` runs `npm run post` every
-weekday at 06:00 UTC. Configure it once:
+Two workflows, both `workflow_dispatch`-only:
+
+| Workflow | Runs | Posts |
+| --- | --- | --- |
+| `.github/workflows/canteen-menu.yml` | `npm run post` | morning menu (+ week ahead on Fridays) |
+| `.github/workflows/lunch-reminder.yml` | `npm run remind` | "5 minutes until lunch" + gif |
+
+Neither uses GitHub's own `schedule:` cron — GitHub's scheduled runs are
+best-effort, get delayed at peak times and are occasionally dropped. Instead
+Google Cloud Scheduler POSTs to the `workflow_dispatch` API on a real,
+timezone-aware schedule (`Europe/Copenhagen`, so no daylight-saving drift):
+the menu job in the morning, the reminder job at **10:55, Mon–Fri**.
+
+Configure once:
 
 1. Push this repo to GitHub.
 2. **Settings → Secrets and variables → Actions**:
    - Secrets: `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID`
-   - (optional) Variables: `FOODPLACE_LOCATION_ID`, `TIMEZONE`, `MENU_LANGUAGE`
-3. Test it now: **Actions → Canteen menu → Run workflow**.
+   - (optional) Variables: `FOODPLACE_LOCATION_ID`, `TIMEZONE`
+3. Point a Cloud Scheduler job at each workflow's dispatch endpoint:
+   `POST https://api.github.com/repos/<owner>/<repo>/actions/workflows/<file>/dispatches`
+   with body `{"ref":"main"}` and a token with `actions:write`.
+4. Test either one by hand: **Actions → \<workflow\> → Run workflow**.
 
-### Timing note
+The weekday/Friday logic lives in the code, so a mis-set schedule can't produce
+a weekend post — both entry points skip Saturdays and Sundays.
 
-Cron in GitHub Actions is **UTC**. `0 6 * * 1-5` = 08:00 Copenhagen in summer
-(CEST) / 07:00 in winter (CET). A fixed UTC cron drifts one hour across
-daylight-saving changes; adjust the hour if that matters. GitHub's scheduler can
-also be delayed a few minutes at peak times.
+## Gifs
+
+There are two independent gif pools, each a plain text file with one URL per
+line (`#` comments and blank lines ignored):
+
+| File | Used by |
+| --- | --- |
+| `gifs.txt` | the daily menu post — gif appended at the end |
+| `gifs-reminder.txt` | the "5 minutes until lunch" post |
+
+Add or remove lines to change a pool; no code change needed. One URL is picked
+at random per run.
+
+Use the **direct** image URL, not the Giphy page URL — Slack renders the gif
+from the URL itself, so a page link shows up as a broken image:
+
+```
+good:  https://media.giphy.com/media/<id>/giphy.gif
+bad:   https://giphy.com/gifs/some-slug-<id>
+```
+
+On giphy.com: open the gif → **Share** → **Copy GIF link**, or right-click →
+*Copy Image Address*. The bot warns in the log if a line looks like a page link,
+and skips lines that aren't URLs at all. If a file has no URLs, that post just
+goes out without a gif.
+
+The weekly (Friday) menu post has no gif.
 
 ## Configuration
 
@@ -90,8 +139,9 @@ also be delayed a few minutes at peak times.
 | `TREATS_STATION` | `Treats` | Station highlighted as "today's treat" |
 | `STATION_LABELS` | `Meal 1=The Deli` | Rename ugly station names for display |
 
-Output is always bilingual (Danish + English). The weekly post always shows all
-stations regardless of `DAILY_STATIONS`.
+The menu posts are always bilingual (Danish + English); the lunch reminder is
+English only. The weekly post always shows all stations regardless of
+`DAILY_STATIONS`.
 
 ## Modes
 
@@ -101,4 +151,6 @@ stations regardless of `DAILY_STATIONS`.
 - `day`: today's menu only.
 - `week`: the coming week only.
 
-Add `--dry-run` to print instead of posting.
+The lunch reminder is its own entry point with no modes: `node src/reminder.js`.
+
+Add `--dry-run` to either script to print instead of posting.

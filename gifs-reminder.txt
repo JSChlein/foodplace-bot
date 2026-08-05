@@ -1,0 +1,25 @@
+# Gifs for the "5 minutes until lunch" reminder post. One URL per line; the bot
+# picks one at random each time the reminder runs. This pool is separate from
+# gifs.txt (the daily menu post) — the two never share gifs.
+#
+# IMPORTANT: use the DIRECT image URL, not the Giphy page URL. Slack renders the
+# gif from the image URL itself, so a page link shows up as a broken image.
+#
+#   good:  https://media.giphy.com/media/<id>/giphy.gif
+#   bad:   https://giphy.com/gifs/some-slug-<id>
+#
+# To get the direct URL on giphy.com: open the gif → "Share" → "Copy GIF link",
+# or right-click the gif → "Copy Image Address".
+#
+# Lines starting with "#" and blank lines are ignored. If the file has no URLs,
+# the reminder still posts — just the title, no gif.
+
+# https://media.giphy.com/media/example123/giphy.gif
+https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjFoN3p2cmRhbnAxdTQ0dDBvc3FicDZiMzRzc29scms2d3hoY3BlayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CUbiYQbsKSGAM/giphy.gif
+https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExempobXdnOHc4NWhhazA5NWFtOHU2bm9pZHJwYnN1Yno5dHZhd2dsdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rRhNPkamRYimQ/giphy.gif
+https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXBhM2pmOTZod254OHB5bWlib3V4bWZncmt0YjI0OGRuM2xvOW1qYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7kn27lnYSAE9O/giphy.gif
+https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExc3dxY2UwOHYxZXp1dmJtaWlzMjloc2Q0bHlmZXRqcmY2ZXB6Z2F5OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPwoeGErMmaI43S/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3cndsZzNjdzV0cXU3bWVneDl0MWtuOXpneDFzMzdhc2ZkbDAyOGN2aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/tPa5i1U7IYPfeesazu/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTRuNWoya2xoajVldTV5NDhhdzFjdDdhbDdiZHFzbnp1MHloamhtYiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5BYma7CxsYZ9e6SvUH/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MTAyYm1rbHd2cDB3ZGhscDJjMXd0N3h3aXZ0eGNzbTFydWU5NTR5YyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/jhFUy6eCy6xs4/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3c3pqano5dmZuMmR0ZHhpc3MyeDI2OTMzYnQwNHhoMDVlajFhMjB0dCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ZFuPxYpT4qYOWnDAno/giphy.gif

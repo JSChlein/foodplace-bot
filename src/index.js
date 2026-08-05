@@ -18,7 +18,8 @@ import {
   workweekDates,
 } from "./dates.js";
 import { buildDayMessage, buildWeekMessage } from "./format.js";
-import { postMessage } from "./slack.js";
+import { loadGifs, pickGif } from "./gifs.js";
+import { deliver } from "./deliver.js";
 
 function parseArgs(argv) {
   const args = { mode: "auto", dryRun: false };
@@ -29,22 +30,6 @@ function parseArgs(argv) {
   return args;
 }
 
-function preview(label, message) {
-  console.log(`\n===== ${label} =====`);
-  console.log(message.text);
-  console.log("---");
-  console.log(JSON.stringify(message.blocks, null, 2));
-}
-
-async function deliver(label, message, dryRun) {
-  if (dryRun) {
-    preview(label, message);
-    return;
-  }
-  const ts = await postMessage(config.slackToken, config.channel, message);
-  console.log(`Posted ${label} to ${config.channel} (ts=${ts})`);
-}
-
 async function main() {
   const args = parseArgs(process.argv);
   if (!args.dryRun) assertPostConfig();
@@ -53,6 +38,9 @@ async function main() {
     dailyStations: config.dailyStations,
     treatsStation: config.treatsStation,
     stationLabels: config.stationLabels,
+    // One random gif per run, appended to the daily post. Null when gifs.txt
+    // has no URLs yet — the post then goes out without a gif.
+    gifUrl: pickGif(loadGifs("gifs.txt")),
   };
   const menu = await fetchMenu(config.locationId);
   const today = todayInTimezone(config.timezone);

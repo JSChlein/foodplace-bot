@@ -11,7 +11,10 @@
     "post:local": "node --env-file=.env src/index.js",
     "post:day": "node --env-file=.env src/index.js --mode=day",
     "post:week": "node --env-file=.env src/index.js --mode=week",
-    "preview": "node src/index.js --dry-run"
+    "preview": "node src/index.js --dry-run",
+    "remind": "node src/reminder.js",
+    "remind:local": "node --env-file=.env src/reminder.js",
+    "remind:preview": "node src/reminder.js --dry-run"
   },
   "dependencies": {
     "@slack/web-api": "^7.8.0"

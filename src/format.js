@@ -28,7 +28,11 @@ function dishBlock(item, labels) {
 
 // ---- Daily post -----------------------------------------------------------
 
-export function buildDayMessage(dateStr, items, { dailyStations, treatsStation, stationLabels }) {
+export function buildDayMessage(
+  dateStr,
+  items,
+  { dailyStations, treatsStation, stationLabels, gifUrl }
+) {
   const daDate = `${weekdayName(dateStr, "da")} d. ${dayLabel(dateStr, "da")}`;
   const enDate = `${weekdayName(dateStr, "en")} ${dayLabel(dateStr, "en")}`;
   const headerText = "🍽️ Frokost i dag / Today's lunch";
@@ -75,6 +79,15 @@ export function buildDayMessage(dateStr, items, { dailyStations, treatsStation, 
   blocks.push({ type: "divider" });
   blocks.push({ type: "context", elements: [{ type: "mrkdwn", text: "The Food Place" }] });
 
+  // Gif of the day — last, so it closes the message.
+  if (gifUrl) {
+    blocks.push({
+      type: "image",
+      image_url: gifUrl,
+      alt_text: "Dagens gif / Gif of the day",
+    });
+  }
+
   return { text: `${headerText} – ${daDate}`, blocks };
 }
 
@@ -106,6 +119,28 @@ export function buildWeekMessage(dates, byDate, { stationLabels } = {}) {
 
   blocks.push({ type: "divider" });
   blocks.push({ type: "context", elements: [{ type: "mrkdwn", text: "The Food Place" }] });
+
+  return { text: headerText, blocks };
+}
+
+// ---- Lunch reminder -------------------------------------------------------
+// Posted shortly before lunch opens. Just a title and a gif — the menu itself
+// went out in the morning post. English only, unlike the menu posts.
+
+export function buildReminderMessage({ gifUrl } = {}) {
+  const headerText = "⏰ 5 minutes until lunch";
+
+  const blocks = [
+    { type: "header", text: { type: "plain_text", text: headerText, emoji: true } },
+  ];
+
+  if (gifUrl) {
+    blocks.push({
+      type: "image",
+      image_url: gifUrl,
+      alt_text: "5 minutes until lunch",
+    });
+  }
 
   return { text: headerText, blocks };
 }

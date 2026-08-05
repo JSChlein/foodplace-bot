@@ -1,0 +1,23 @@
+# Gifs for the daily menu post. One URL per line; the bot picks one at random
+# each day and appends it to the end of the daily message.
+#
+# IMPORTANT: use the DIRECT image URL, not the Giphy page URL. Slack renders the
+# gif from the image URL itself, so a page link shows up as a broken image.
+#
+#   good:  https://media.giphy.com/media/<id>/giphy.gif
+#   bad:   https://giphy.com/gifs/some-slug-<id>
+#
+# To get the direct URL on giphy.com: open the gif → "Share" → "Copy GIF link",
+# or right-click the gif → "Copy Image Address".
+#
+# Lines starting with "#" and blank lines are ignored. If the file has no URLs,
+# the post simply goes out without a gif.
+
+# https://media.giphy.com/media/example123/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXoyeGZncnoxb244OWt2d2R5OWN0b29rYXZjM3A5anlhbmdhbjdnMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/EDV30lQQ9VW5q/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXoyeGZncnoxb244OWt2d2R5OWN0b29rYXZjM3A5anlhbmdhbjdnMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/HEkBXK8qnIRuo/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjM1emtmeGVnbmk1NzJ0cnpmZmV4cjVlOTMxcWE4cmh6bXUxczB4aSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/jKaFXbKyZFja0/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3YTZ6YTIyaGtsd2RnbDI3ZzBmYWtod2N3NjJobWx3NXVmOGt2NHR5NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/KeEnqOWYF7tgE4uPyL/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3Ymk5aXdyMzV1ZGR2NnI1dTU2OXh2dXc0Zm5xdzQwdG41c2E3bW0zcyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR1GSc8kQEFBlWU/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3NjNpYTYwdmsydjdzZjJpNnVmcDNkenBzNDN6ejBidzduNm43NnJoZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xTiTnrliW65rlwud8I/giphy.gif
+https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3NjNpYTYwdmsydjdzZjJpNnVmcDNkenBzNDN6ejBidzduNm43NnJoZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oz8xBDBL3KSa2kZX2/giphy.gif

@@ -1,0 +1,25 @@
+name: Lunch reminder
+
+# Posts "5 minutes until lunch" plus a random gif from gifs-reminder.txt.
+#
+# Triggered externally, not by GitHub's own cron: Google Cloud Scheduler POSTs
+# to the workflow_dispatch API on a real, timezone-aware schedule (10:55
+# Europe/Copenhagen, Mon–Fri). Nothing time-related lives here — the script only
+# guards against weekends as a safety net.
+on:
+  workflow_dispatch: # triggered by Cloud Scheduler (and the manual "Run workflow" button)
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run remind
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          TIMEZONE: ${{ vars.TIMEZONE || 'Europe/Copenhagen' }}
