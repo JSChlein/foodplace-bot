@@ -106,7 +106,20 @@ export function buildDayMessage(
 }
 
 // Compact "next week" overview appended to the Friday daily post. Same station
-// selection as the daily post, but one line per dish to keep it short.
+// selection as the daily post, rendered as a native Slack table with Danish
+// and English in separate columns.
+function tableCell(text) {
+  return { type: "raw_text", text };
+}
+
+// "Man/Mon 10/8" — short bilingual day label for the table's first column.
+function shortDayLabel(dateStr) {
+  const da = capitalize(weekdayName(dateStr, "da").slice(0, 3));
+  const en = weekdayName(dateStr, "en").slice(0, 3);
+  const [, month, day] = dateStr.split("-");
+  return `${da}/${en} ${Number(day)}/${Number(month)}`;
+}
+
 function weekAheadBlocks({ dates, byDate }, { dailyStations, treatsStation, stationLabels }) {
   const week = isoWeekNumber(dates[0]);
   const blocks = [
@@ -117,24 +130,41 @@ function weekAheadBlocks({ dates, byDate }, { dailyStations, treatsStation, stat
     },
   ];
 
+  const rows = [
+    [tableCell("Dag / Day"), tableCell("Station"), tableCell("🇩🇰 Dansk"), tableCell("🇬🇧 English")],
+  ];
   for (const day of dates) {
     const items = byDate.get(day) || [];
-    const selected = selectDailyItems(items, dailyStations);
-    const treats = items.filter((i) => stationMatches(i, [treatsStation]));
-    if (!selected.length && !treats.length) continue;
+    const dishes = [
+      ...selectDailyItems(items, dailyStations).map((i) => ({
+        label: stationLabel(i, stationLabels),
+        item: i,
+      })),
+      ...items
+        .filter((i) => stationMatches(i, [treatsStation]))
+        .map((t) => ({ label: `🍰 ${stationLabel(t, stationLabels)}`, item: t })),
+    ];
+    dishes.forEach((dish, idx) => {
+      rows.push([
+        // Only label the day on its first row, so days read as groups.
+        tableCell(idx === 0 ? shortDayLabel(day) : " "),
+        tableCell(dish.label),
+        tableCell(dish.item.da.dish),
+        tableCell(dish.item.en.dish),
+      ]);
+    });
+  }
 
-    const heading =
-      `*${capitalize(weekdayName(day, "da"))} d. ${dayLabel(day, "da")}` +
-      `  ·  ${capitalize(weekdayName(day, "en"))} ${dayLabel(day, "en")}*`;
-    const lines = selected.map(
-      (i) => `• *${stationLabel(i, stationLabels)}:* 🇩🇰 ${i.da.dish}  ·  🇬🇧 ${i.en.dish}`
-    );
-    for (const t of treats) {
-      lines.push(`• 🍰 🇩🇰 ${t.da.dish}  ·  🇬🇧 ${t.en.dish}`);
-    }
+  if (rows.length > 1) {
     blocks.push({
-      type: "section",
-      text: { type: "mrkdwn", text: `${heading}\n${lines.join("\n")}` },
+      type: "table",
+      column_settings: [
+        { is_wrapped: false },
+        { is_wrapped: false },
+        { is_wrapped: true },
+        { is_wrapped: true },
+      ],
+      rows,
     });
   }
 
