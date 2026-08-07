@@ -26,12 +26,26 @@ function dishBlock(item, labels) {
   return `*${stationLabel(item, labels)}*\n🇩🇰 ${item.da.dish}\n🇬🇧 ${item.en.dish}`;
 }
 
+// Selected stations, in config order — only the FIRST dish per station.
+// (Stations like the deli list several items — cold cuts, then a salad, then
+// bread — but only the first is the station's main offering.)
+function selectDailyItems(items, dailyStations) {
+  const selected = [];
+  for (const name of dailyStations) {
+    const first = items.find((item) => stationMatches(item, [name]));
+    if (first) selected.push(first);
+  }
+  return selected;
+}
+
 // ---- Daily post -----------------------------------------------------------
+// On Fridays the daily post also gets a short "next week" overview appended
+// (pass `weekAhead`), filtered to the same stations as the daily post itself.
 
 export function buildDayMessage(
   dateStr,
   items,
-  { dailyStations, treatsStation, stationLabels, gifUrl }
+  { dailyStations, treatsStation, stationLabels, gifUrl, weekAhead }
 ) {
   const daDate = `${weekdayName(dateStr, "da")} d. ${dayLabel(dateStr, "da")}`;
   const enDate = `${weekdayName(dateStr, "en")} ${dayLabel(dateStr, "en")}`;
@@ -42,14 +56,7 @@ export function buildDayMessage(
     { type: "context", elements: [{ type: "mrkdwn", text: `*${daDate}*  ·  *${enDate}*` }] },
   ];
 
-  // Selected stations, in config order — only the FIRST dish per station.
-  // (Stations like the deli list several items — cold cuts, then a salad, then
-  // bread — but only the first is the station's main offering.)
-  const selected = [];
-  for (const name of dailyStations) {
-    const first = items.find((item) => stationMatches(item, [name]));
-    if (first) selected.push(first);
-  }
+  const selected = selectDailyItems(items, dailyStations);
 
   if (!selected.length) {
     blocks.push({
@@ -76,6 +83,13 @@ export function buildDayMessage(
     });
   }
 
+  // Week ahead (Fridays) — one compact line per dish, same stations as above.
+  if (weekAhead) {
+    blocks.push(
+      ...weekAheadBlocks(weekAhead, { dailyStations, treatsStation, stationLabels })
+    );
+  }
+
   blocks.push({ type: "divider" });
   blocks.push({ type: "context", elements: [{ type: "mrkdwn", text: "The Food Place" }] });
 
@@ -91,7 +105,43 @@ export function buildDayMessage(
   return { text: `${headerText} – ${daDate}`, blocks };
 }
 
-// ---- Weekly (Friday) post -------------------------------------------------
+// Compact "next week" overview appended to the Friday daily post. Same station
+// selection as the daily post, but one line per dish to keep it short.
+function weekAheadBlocks({ dates, byDate }, { dailyStations, treatsStation, stationLabels }) {
+  const week = isoWeekNumber(dates[0]);
+  const blocks = [
+    { type: "divider" },
+    {
+      type: "section",
+      text: { type: "mrkdwn", text: `📅 *Næste uge / Next week – uge ${week} / week ${week}*` },
+    },
+  ];
+
+  for (const day of dates) {
+    const items = byDate.get(day) || [];
+    const selected = selectDailyItems(items, dailyStations);
+    const treats = items.filter((i) => stationMatches(i, [treatsStation]));
+    if (!selected.length && !treats.length) continue;
+
+    const heading =
+      `*${capitalize(weekdayName(day, "da"))} d. ${dayLabel(day, "da")}` +
+      `  ·  ${capitalize(weekdayName(day, "en"))} ${dayLabel(day, "en")}*`;
+    const lines = selected.map(
+      (i) => `• *${stationLabel(i, stationLabels)}:* 🇩🇰 ${i.da.dish}  ·  🇬🇧 ${i.en.dish}`
+    );
+    for (const t of treats) {
+      lines.push(`• 🍰 🇩🇰 ${t.da.dish}  ·  🇬🇧 ${t.en.dish}`);
+    }
+    blocks.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `${heading}\n${lines.join("\n")}` },
+    });
+  }
+
+  return blocks;
+}
+
+// ---- Weekly (full-menu) post ----------------------------------------------
 // The weekly post shows the FULL menu for every day (all stations), so nobody
 // misses anything when planning the week.
 

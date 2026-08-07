@@ -2,8 +2,10 @@
 //
 // Modes (choose with --mode, default "auto"):
 //   day    Post today's menu.
-//   week   Post the full coming week's menu.
-//   auto   Post today's menu on weekdays; on Fridays ALSO post the coming week.
+//   week   Post the full coming week's menu (all stations, own message).
+//   auto   Post today's menu on weekdays; on Fridays the same message also
+//          gets a short "next week" overview appended (same stations as the
+//          daily post).
 //
 // Flags:
 //   --dry-run   Print the message(s) to stdout instead of posting to Slack.
@@ -45,36 +47,42 @@ async function main() {
   const menu = await fetchMenu(config.locationId);
   const today = todayInTimezone(config.timezone);
 
-  const wantDay = args.mode === "day" || args.mode === "auto";
-  const wantWeek =
-    args.mode === "week" || (args.mode === "auto" && isFriday(today));
-
   if (args.mode === "auto" && isWeekend(today)) {
     console.log(`Today (${today}) is a weekend — nothing to post.`);
     return;
   }
 
-  if (wantDay) {
+  if (args.mode === "day" || args.mode === "auto") {
     const items = menu.byDate.get(today) || [];
-    if (!items.length && args.mode === "auto") {
+
+    // On Fridays the daily post gets a short "next week" overview appended.
+    // Next week's Monday is menu.weekTwo; fall back to weekOne if the page
+    // only served one week.
+    if (args.mode === "auto" && isFriday(today)) {
+      const monday = menu.weekTwo || menu.weekOne;
+      if (monday) {
+        dayOpts.weekAhead = { dates: workweekDates(monday), byDate: menu.byDate };
+      }
+    }
+
+    if (!items.length && !dayOpts.weekAhead && args.mode === "auto") {
       console.log(`No menu for ${today} — skipping daily post.`);
     } else {
       await deliver("daily menu", buildDayMessage(today, items, dayOpts), args.dryRun);
     }
   }
 
-  if (wantWeek) {
-    // "Coming week": on Friday we want next week (menu.weekTwo). For a manual
-    // --mode=week run outside Friday, fall back to whichever week isn't over.
-    const mondayOfComingWeek =
-      isFriday(today) && menu.weekTwo ? menu.weekTwo : menu.weekOne;
-    if (!mondayOfComingWeek) {
+  if (args.mode === "week") {
+    // Manual full-menu post: pick whichever week isn't over yet.
+    const monday = isFriday(today) && menu.weekTwo ? menu.weekTwo : menu.weekOne;
+    if (!monday) {
       throw new Error("Could not determine which week to post.");
     }
-    const dates = workweekDates(mondayOfComingWeek);
     await deliver(
       "week ahead",
-      buildWeekMessage(dates, menu.byDate, { stationLabels: config.stationLabels }),
+      buildWeekMessage(workweekDates(monday), menu.byDate, {
+        stationLabels: config.stationLabels,
+      }),
       args.dryRun
     );
   }

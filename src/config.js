@@ -17,9 +17,10 @@ export const config = {
   // Timezone used to decide "today" and "which weekday it is".
   timezone: process.env.TIMEZONE || "Europe/Copenhagen",
 
-  // Which stations to include in the DAILY post, in display order. Names must
-  // match the station names from The Food Place exactly (case-insensitive).
-  // Comma-separated. The weekly (Friday) post always shows the full menu.
+  // Which stations to include in the DAILY post (and the Friday "next week"
+  // overview), in display order. Names must match the station names from The
+  // Food Place exactly (case-insensitive). Comma-separated. A manual
+  // --mode=week post still shows the full menu.
   dailyStations: (process.env.DAILY_STATIONS || "Go Green,Meal 1,Comfort Food")
     .split(",")
     .map((s) => s.trim())
